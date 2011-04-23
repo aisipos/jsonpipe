@@ -3,7 +3,12 @@
 import sys
 
 import argparse
-import simplejson
+try:
+    import simplejson
+    OrderedDict = simplejson.OrderedDict
+except ImportError:
+    import json as simplejson
+    from collections import OrderedDict
 
 from pipe import jsonpipe, jsonunpipe
 
@@ -65,7 +70,7 @@ def main():
 
     # Load JSON from stdin, preserving the order of object keys.
     json_obj = simplejson.load(sys.stdin,
-                               object_pairs_hook=simplejson.OrderedDict)
+                               object_pairs_hook=OrderedDict)
     for line in jsonpipe(json_obj, pathsep=args.separator):
         print line
 
@@ -76,5 +81,5 @@ def main_unpipe():
     simplejson.dump(
         jsonunpipe(iter(sys.stdin), pathsep=args.separator,
                    decoder=simplejson.JSONDecoder(
-                       object_pairs_hook=simplejson.OrderedDict)),
+                       object_pairs_hook=OrderedDict)),
         sys.stdout)

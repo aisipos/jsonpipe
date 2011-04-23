@@ -1,7 +1,10 @@
 import re
 
 import calabash
-import simplejson
+try:
+    import simplejson
+except ImportError:
+    import json as simplejson
 
 import jsonpipe as jp
 

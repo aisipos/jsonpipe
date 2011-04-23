@@ -1,4 +1,7 @@
-import simplejson
+try:
+    import simplejson
+except ImportError:
+    import json as simplejson
 
 
 __all__ = ['jsonpipe', 'jsonunpipe']
