@@ -3,9 +3,9 @@
 import sys
 
 import argparse
-import simplejson
+import json
 
-from pipe import jsonpipe, jsonunpipe
+from .pipe import jsonpipe, jsonunpipe, compose2, compose
 
 
 __all__ = ['jsonpipe', 'jsonunpipe']
@@ -64,17 +64,19 @@ def main():
     args = PARSER.parse_args()
 
     # Load JSON from stdin, preserving the order of object keys.
-    json_obj = simplejson.load(sys.stdin,
-                               object_pairs_hook=simplejson.OrderedDict)
+    json_obj = json.load(sys.stdin, object_pairs_hook=dict)
     for line in jsonpipe(json_obj, pathsep=args.separator):
-        print line
+        print(line)
 
 
 def main_unpipe():
     args = PARSER.parse_args()
 
-    simplejson.dump(
-        jsonunpipe(iter(sys.stdin), pathsep=args.separator,
-                   decoder=simplejson.JSONDecoder(
-                       object_pairs_hook=simplejson.OrderedDict)),
-        sys.stdout)
+    json.dump(
+        jsonunpipe(
+            iter(sys.stdin),
+            pathsep=args.separator,
+            decoder=json.JSONDecoder(object_pairs_hook=dict)
+        ),
+        sys.stdout
+    )

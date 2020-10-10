@@ -122,9 +122,9 @@ having to spawn another process::
 
 Note that the ``jsonpipe()`` generator function takes a Python object, not a
 JSON string, so the order of dictionary keys may be slightly unpredictable in
-the output. You can use ``simplejson.OrderedDict`` to get a fixed ordering::
+the output. You can use ``json.OrderedDict`` to get a fixed ordering::
 
-    >>> from simplejson import OrderedDict
+    >>> from json import OrderedDict
     >>> obj = OrderedDict([('a', 1), ('b', 2), ('c', 3)])
     >>> obj
     OrderedDict([('a', 1), ('b', 2), ('c', 3)])
@@ -136,11 +136,11 @@ the output. You can use ``simplejson.OrderedDict`` to get a fixed ordering::
     /c	3
 
 A more general hint: if you need to parse JSON but maintain ordering for object
-keys, use the ``object_pairs_hook`` option on ``simplejson.load(s)``::
+keys, use the ``object_pairs_hook`` option on ``json.load(s)``::
 
-    >>> import simplejson
-    >>> simplejson.loads('{"a": 1, "b": 2, "c": 3}',
-    ...                  object_pairs_hook=simplejson.OrderedDict)
+    >>> import json
+    >>> json.loads('{"a": 1, "b": 2, "c": 3}',
+    ...                  object_pairs_hook=json.OrderedDict)
     OrderedDict([('a', 1), ('b', 2), ('c', 3)])
 
 Of course, a Python implementation of jsonunpipe also exists::
@@ -153,8 +153,8 @@ You can pass a ``decoder`` parameter, as in the following example, where the
 JSON object returned uses an ordered dictionary::
 
     >>> jsonunpipe(['/\t{}', '/a\t123', '/b\t456'],
-    ...            decoder=simplejson.JSONDecoder(
-    ...                object_pairs_hook=simplejson.OrderedDict))
+    ...            decoder=json.JSONDecoder(
+    ...                object_pairs_hook=json.OrderedDict))
     OrderedDict([('a', 123), ('b', 456)])
 
 Installation

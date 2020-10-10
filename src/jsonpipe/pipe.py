@@ -1,8 +1,16 @@
-import simplejson
+# -*- coding: utf-8 -*-
+from functools import reduce
+import json
 
 
-__all__ = ['jsonpipe', 'jsonunpipe']
+__all__ = ['jsonpipe', 'jsonunpipe', 'compose']
 
+# See https://stackoverflow.com/a/24047214/149416
+def compose2(f, g):
+    return lambda *a, **kw: f(g(*a, **kw))
+
+def compose(*funcs):
+    return reduce(compose2, funcs)
 
 def jsonpipe(obj, pathsep='/', path=()):
 
@@ -30,8 +38,8 @@ def jsonpipe(obj, pathsep='/', path=()):
     nulls):
 
         >>> def pipe(obj): # Shim for easier demonstration.
-        ...     print '\n'.join(jsonpipe(obj))
-        >>> pipe(u"Hello, World!")
+        ...     print(''.join(jsonpipe(obj)))
+        >>> pipe("Hello, World!")
         /	"Hello, World!"
         >>> pipe(123)
         /	123
@@ -101,11 +109,11 @@ def jsonpipe(obj, pathsep='/', path=()):
         return pathsep + pathsep.join(path) + "\t" + string
 
     if is_value(obj):
-        yield output(simplejson.dumps(obj))
-        raise StopIteration # Stop the generator immediately.
+        yield output(json.dumps(obj))
+        return # Stop the generator immediately.
     elif isinstance(obj, dict):
         yield output('{}')
-        iterator = obj.iteritems()
+        iterator = obj.items()
     elif hasattr(obj, '__iter__'):
         yield output('[]')
         iterator = enumerate(obj)
@@ -128,13 +136,13 @@ def jsonpipe(obj, pathsep='/', path=()):
 
 
 def jsonunpipe(lines, pathsep='/', discard='',
-               decoder=simplejson._default_decoder):
+               decoder=json._default_decoder):
 
     r"""
     Parse a stream of jsonpipe output back into a JSON object.
 
         >>> def unpipe(s): # Shim for easier demonstration.
-        ...     print repr(jsonunpipe(s.strip().splitlines()))
+        ...     print(repr(jsonunpipe(s.strip().splitlines())))
 
     Works as expected for simple JSON values::
 
@@ -208,19 +216,17 @@ def jsonunpipe(lines, pathsep='/', discard='',
 
 def to_str(obj):
 
-    ur"""
+    r"""
     Coerce an object to a bytestring, utf-8-encoding if necessary.
 
         >>> to_str("Hello World")
         'Hello World'
         >>> to_str(u"H\xe9llo")
-        'H\xc3\xa9llo'
+        'Héllo'
     """
 
-    if isinstance(obj, unicode):
+    if isinstance(obj, bytes):
         return obj.encode('utf-8')
-    elif hasattr(obj, '__unicode__'):
-        return unicode(obj).encode('utf-8')
     return str(obj)
 
 
@@ -237,4 +243,4 @@ def is_value(obj):
     *   `None`
     """
 
-    return isinstance(obj, (str, unicode, int, long, float, bool, type(None)))
+    return isinstance(obj, (str, bytes, int, float, bool, type(None)))

@@ -1,7 +1,6 @@
+from functools import partial
 import re
-
-import calabash
-import simplejson
+import json
 
 import jsonpipe as jp
 
@@ -9,17 +8,10 @@ import jsonpipe as jp
 __all__ = ['jsonpipe', 'jsonunpipe', 'select', 'search_attr']
 
 
-jsonpipe = calabash.pipe(jp.jsonpipe)
+jsonpipe = jp.jsonpipe
+compose = jp.compose
 
 
-@calabash.pipe
-def jsonunpipe(stdin, *args, **kwargs):
-    """Calabash wrapper for :func:`jsonpipe.jsonunpipe`."""
-
-    yield jp.jsonunpipe(stdin, *args, **kwargs)
-
-
-@calabash.pipe
 def select(stdin, path, pathsep='/'):
 
     r"""
@@ -34,22 +26,18 @@ def select(stdin, path, pathsep='/'):
         '/b\t{}',
         '/b/c\t3',
         '/b/d\t4']
-        >>> list(jsonpipe(obj) | select('/b'))
+        >>> list(compose(jsonpipe, partial(select, '/b'))(obj))
         ['/b\t{}',
         '/b/c\t3',
         '/b/d\t4']
-        >>> list(jsonpipe(obj) | select('/b') | jsonunpipe())
+        >>> list(compose(jsonpipe(obj), partial(select, '/b')), jsonunpipe()))
         [{'b': {'c': 3, 'd': 4}}]
     """
 
     path = re.sub(r'%s$' % re.escape(pathsep), r'', path)
-    return iter(stdin |
-                calabash.common.grep(r'^%s[\t%s]' % (
-                    re.escape(path),
-                    re.escape(pathsep))))
+    reg = re.compile(rf'^{re.escape(path)}[\t{re.escape(pathsep)}]')
+    return (line for line in stdin if reg.match(line))
 
-
-@calabash.pipe
 def search_attr(stdin, attr, value, pathsep='/'):
 
     r"""
@@ -58,26 +46,31 @@ def search_attr(stdin, attr, value, pathsep='/'):
     Yields paths to objects for which the given pair matches. Example:
 
         >>> obj = {'a': 1, 'b': {'a': 2, 'c': {'a': "Hello"}}}
-        >>> list(jsonpipe(obj) | search_attr('a', 1))
+        >>> list(compose(jsonpipe, partial(search_attr, attr='a', value=1))(obj))
         ['/']
-        >>> list(jsonpipe(obj) | search_attr('a', 2))
+        >>> list(compose(jsonpipe, partial(search_attr, attr='a', value=2))(obj))
         ['/b']
-        >>> list(jsonpipe(obj) | search_attr('a', "Hello"))
+        >>> list(compose(jsonpipe, partial(search_attr, attr='a', value="Hello"))(obj))
         ['/b/c']
 
     Multiple matches will result in multiple paths being yielded:
 
         >>> obj = {'a': 1, 'b': {'a': 1, 'c': {'a': 1}}}
-        >>> list(jsonpipe(obj) | search_attr('a', 1))
+        >>> list(compose(jsonpipe, partial(search_attr, attr='a', value=1))(obj))
         ['/', '/b', '/b/c']
     """
 
-    return iter(stdin |
-                # '...path/attribute\tvalue' => 'path'.
-                calabash.common.sed(r'^(.*)%s%s\t%s' % (
-                    re.escape(pathsep),
-                    re.escape(attr),
-                    re.escape(simplejson.dumps(value))),
-                    r'\1', exclusive=True) |
-                # Replace empty strings with the root pathsep.
-                calabash.common.sed(r'^$', pathsep))
+    # '...path/attribute\tvalue' => 'path'.
+    reg = re.compile(
+        rf'^(.*){re.escape(pathsep)}{re.escape(attr)}\t{re.escape(json.dumps(value))}'
+    )
+    i1 = (reg.sub(r'\1', line) for line in stdin)
+    # Replace empty strings with the root pathsep.
+    return (re.sub(r'^$', pathsep, line) for line in i1)
+    # return iter(stdin |
+    #             calabash.common.sed(r'^(.*)%s%s\t%s' % (
+    #                 re.escape(pathsep),
+    #                 re.escape(attr),
+    #                 re.escape(json.dumps(value))),
+    #                 r'\1', exclusive=True) |
+    #             calabash.common.sed(r'^$', pathsep))

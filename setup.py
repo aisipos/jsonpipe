@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from distribute_setup import use_setuptools
-use_setuptools()
 
 import re
 from setuptools import setup, find_packages
@@ -29,6 +27,6 @@ setup(
     packages=find_packages(where='src'),
     entry_points={'console_scripts': ['jsonpipe = jsonpipe:main',
                                       'jsonunpipe = jsonpipe:main_unpipe']},
-    install_requires=['simplejson>=2.1.3', 'argparse>=1.1', 'calabash==0.0.3'],
+    install_requires=['argparse>=1.1'],
     test_suite='jsonpipe._get_tests',
 )
