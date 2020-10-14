@@ -5,7 +5,7 @@ import sys
 import argparse
 import json
 
-from .pipe import jsonpipe, jsonunpipe, compose2, compose
+from .pipe import jsonpipe, jsonunpipe, compose2, compose, pipe, pipe2
 
 
 __all__ = ['jsonpipe', 'jsonunpipe']

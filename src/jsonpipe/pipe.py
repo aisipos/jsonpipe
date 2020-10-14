@@ -3,14 +3,20 @@ from functools import reduce
 import json
 
 
-__all__ = ['jsonpipe', 'jsonunpipe', 'compose']
+__all__ = ['jsonpipe', 'jsonunpipe', 'compose', 'pipe', 'compose2', 'pipe2']
 
 # See https://stackoverflow.com/a/24047214/149416
 def compose2(f, g):
     return lambda *a, **kw: f(g(*a, **kw))
 
+def pipe2(f, g):
+    return lambda *a, **kw: g(f(*a, **kw))
+
 def compose(*funcs):
     return reduce(compose2, funcs)
+
+def pipe(*funcs):
+    return reduce(pipe2, funcs)
 
 def jsonpipe(obj, pathsep='/', path=()):
 
@@ -38,7 +44,7 @@ def jsonpipe(obj, pathsep='/', path=()):
     nulls):
 
         >>> def pipe(obj): # Shim for easier demonstration.
-        ...     print(''.join(jsonpipe(obj)))
+        ...     print("\n".join(jsonpipe(obj)))
         >>> pipe("Hello, World!")
         /	"Hello, World!"
         >>> pipe(123)
@@ -96,7 +102,7 @@ def jsonpipe(obj, pathsep='/', path=()):
     is raised. To mitigate this problem, you can provide a custom path
     separator:
 
-        >>> print '\n'.join(jsonpipe({"a/b": 1}, pathsep=':'))
+        >>> print('\n'.join(jsonpipe({"a/b": 1}, pathsep=':')))
         :	{}
         :a/b	1
 
