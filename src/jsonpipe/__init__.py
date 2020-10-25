@@ -1,12 +1,10 @@
 # -*- coding: utf-8 -*-
 
-import sys
-
 import argparse
 import json
+import sys
 
-from .pipe import jsonpipe, jsonunpipe, compose2, compose, pipe, pipe2
-
+from .pipe import compose, compose2, jsonpipe, jsonunpipe, pipe, pipe2
 
 __all__ = ['jsonpipe', 'jsonunpipe']
 __version__ = '0.0.9'

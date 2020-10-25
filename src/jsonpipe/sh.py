@@ -1,9 +1,8 @@
-from functools import partial
-import re
 import json
+import re
+from functools import partial
 
 import jsonpipe as jp
-
 
 __all__ = ['jsonpipe', 'jsonunpipe', 'select', 'search_attr']
 

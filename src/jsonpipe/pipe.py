@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
-from functools import reduce
 import json
-
+from functools import reduce
 
 __all__ = ['jsonpipe', 'jsonunpipe', 'compose', 'pipe', 'compose2', 'pipe2']
 
