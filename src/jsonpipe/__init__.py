@@ -9,7 +9,7 @@ from .pipe import jsonpipe, jsonunpipe, compose2, compose, pipe, pipe2
 
 
 __all__ = ['jsonpipe', 'jsonunpipe']
-__version__ = '0.0.8'
+__version__ = '0.0.9'
 
 
 def _get_tests():
